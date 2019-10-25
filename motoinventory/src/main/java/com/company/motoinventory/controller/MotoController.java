@@ -25,32 +25,32 @@ public class MotoController {
 
     @GetMapping(value = "/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public Motorcycle fetchMotorcycleById(@PathVariable Integer id) throws Exception {
+    public Motorcycle fetchMotorcycleById(@PathVariable Integer id) throws EntityNotFoundException {
         Optional<Motorcycle> motorcycle = repo.findById(id);
-
         if (motorcycle.isPresent()) {
             return motorcycle.get();
         } else {
-            throw new Exception("expected to get back a motorcycle");
+            throw new EntityNotFoundException("expected to get back a motorcycle");
         }
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Motorcycle saveMotorcycle(@RequestBody Motorcycle motorcycle) {
-        return null;
+        return repo.save(motorcycle);
     }
 
     @PutMapping(value = "/{id}")
     @ResponseStatus(HttpStatus.OK)
     public void updateMotorcycle(@RequestBody Motorcycle motorcycle, @PathVariable Integer id) {
-
+        motorcycle.setId(id);
+        repo.save(motorcycle);
     }
 
     @DeleteMapping(value = "/{id}")
     @ResponseStatus(HttpStatus.OK)
     public void deleteMotorcycle(@PathVariable Integer id) {
-
+        repo.deleteById(id);
     }
 	
 }

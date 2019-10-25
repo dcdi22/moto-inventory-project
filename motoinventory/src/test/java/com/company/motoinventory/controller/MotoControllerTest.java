@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
@@ -56,7 +57,7 @@ class MotoControllerTest {
     }
 
     @Test
-    void fetchMotorcycleById() throws Exception {
+    void fetchMotorcycleByIdReturnWithJson() throws Exception {
         Motorcycle out = new Motorcycle(1, new BigDecimal("400.00"), "Vin", "Make", "Model", "Year", "Color");
 
         String outputJson = mapper.writeValueAsString(out);
@@ -72,26 +73,53 @@ class MotoControllerTest {
     }
 
     @Test
-    void saveMotorcycle() {
-        /*
-        	  id int not null auto_increment primary key,
-    price decimal(7,2) not null,
-    vin varchar(20) not null,
-    make varchar(20) not null,
-    model varchar(20) not null,
-    year varchar(4) not null,
-    color varchar(20) not null
-         */
+    void fetchMotorcycleByIdReturn404() throws Exception {
+        this.mockMvc.perform(get("/moto/1"))
+                .andDo(print())
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void saveMotorcycle() throws Exception {
         Motorcycle in = new Motorcycle(null, new BigDecimal("400.00"), "Vin", "Make", "Model", "Year", "Color");
 
-//        String inputJson =
+        String inputJson = mapper.writeValueAsString(in);
+
+        Motorcycle out = new Motorcycle(1, new BigDecimal("400.00"), "Vin", "Make", "Model", "Year", "Color");
+
+        String outputJson = mapper.writeValueAsString(out);
+
+        when(repo.save(in)).thenReturn(out);
+
+        this.mockMvc.perform(post("/moto")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(inputJson))
+                .andDo(print())
+                .andExpect(status().isCreated())
+                .andExpect(content().json(outputJson));
     }
 
     @Test
-    void updateMotorcycle() {
+    void updateMotorcycle() throws Exception {
+        Motorcycle updatedMoto = new Motorcycle(1, new BigDecimal("500.00"), "Vin", "Make", "Model", "Year", "Color");
+
+        String inputJson = mapper.writeValueAsString(updatedMoto);
+
+        this.mockMvc.perform(put("/moto/1")
+                .content(inputJson)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk());
+
     }
 
     @Test
-    void deleteMotorcycle() {
+    void deleteMotorcycle() throws Exception {
+        Motorcycle moto = new Motorcycle(1, new BigDecimal("500.00"), "Vin", "Make", "Model", "Year", "Color");
+
+        this.mockMvc.perform(delete("/moto/1"))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().string(""));
     }
 }
